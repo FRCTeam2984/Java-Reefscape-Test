@@ -5,7 +5,6 @@
 package frc.robot;
 
 import frc.robot.Constants;
-import frc.robot.subsystems.Elevator;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
@@ -91,7 +90,7 @@ public class Robot extends TimedRobot {
       m_robotContainer.desiredPosition -= 30;
       System.out.println("Y pressed");
     }
-    System.out.println(m_robotContainer.m_Elevator.ElevatorTo(m_robotContainer.desiredPosition));
+    System.out.println(m_robotContainer.m_Elevator.elevatorTo(m_robotContainer.desiredPosition));
   }
 
   @Override
