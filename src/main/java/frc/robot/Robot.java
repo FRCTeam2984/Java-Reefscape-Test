@@ -4,10 +4,10 @@
 
 package frc.robot;
 
-import frc.robot.Constants;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.subsystems.Intake;
 
 /**
  * The methods in this class are called automatically corresponding to each mode, as described in
@@ -77,19 +77,38 @@ public class Robot extends TimedRobot {
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
     }
+    m_robotContainer.m_Intake.inPosition = 0.0;
   }
 
   /** This function is called periodically during operator control. */
   @Override
   public void teleopPeriodic() {
-    if (m_robotContainer.controller.getBButton()){
+    // updating inPosition
+    if (m_robotContainer.m_Intake.insideSwitch.isPressed())
+      m_robotContainer.m_Intake.inPosition = m_robotContainer.m_Intake.intakeEncoder.getPosition();
+
+    // intake testing
+    // checking if buttons not pressed and if intake needs to retract
+    if (m_robotContainer.retractNeeded && !
+        (m_robotContainer.controller.algaeSwitch() || 
+        (/*(not coral detected or override) && */m_robotContainer.controller.coralButton())))
+      m_robotContainer.retractNeeded = m_robotContainer.m_Intake.retractIntake(m_robotContainer.intakeLastUsed);
+    // checking whether to coral intake, algae intake, or neither, but coral takes priority over algae
+		if (m_robotContainer.controller.coralButton()/* && (not coral detected || override)*/){
+      m_robotContainer.intakeLastUsed = 'C';
+			m_robotContainer.retractNeeded = true;
+			m_robotContainer.m_Intake.intakeCoral(false);
+		} else if (m_robotContainer.controller.algaeSwitch()){
+      m_robotContainer.intakeLastUsed = 'A';
+			m_robotContainer.retractNeeded = true;
+			m_robotContainer.m_Intake.intakeAlgae();
+		}
+
+    // elevator testing
+    if (m_robotContainer.controller.lowerElevator())
       m_robotContainer.desiredPosition += 30;
-      System.out.println("B pressed");
-    }
-    if (m_robotContainer.controller.getYButton()){
+    if (m_robotContainer.controller.raiseElevator())
       m_robotContainer.desiredPosition -= 30;
-      System.out.println("Y pressed");
-    }
     System.out.println(m_robotContainer.m_Elevator.elevatorTo(m_robotContainer.desiredPosition));
   }
 

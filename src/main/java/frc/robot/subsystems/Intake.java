@@ -7,13 +7,13 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkLimitSwitch;
 
 public class Intake {
-    Double inPosition = 0.0;
-    SparkMax topIntake = new SparkMax(Constants.intakeTopMotorID, MotorType.kBrushless);
-    SparkMax bottomIntake = new SparkMax(Constants.intakeBottomMotorID, MotorType.kBrushless);
-    SparkMax intakePivot = new SparkMax(Constants.intakePivotMotorID, MotorType.kBrushless);
-    RelativeEncoder intakeEncoder = intakePivot.getEncoder();
-    SparkLimitSwitch insideSwitch = intakePivot.getForwardLimitSwitch();
-    SparkLimitSwitch outsideSwitch = intakePivot.getForwardLimitSwitch();
+    public Double inPosition;
+    public SparkMax topIntake = new SparkMax(Constants.intakeTopMotorID, MotorType.kBrushless);
+    public SparkMax bottomIntake = new SparkMax(Constants.intakeBottomMotorID, MotorType.kBrushless);
+    public SparkMax intakePivot = new SparkMax(Constants.intakePivotMotorID, MotorType.kBrushless);
+    public RelativeEncoder intakeEncoder = intakePivot.getEncoder();
+    public SparkLimitSwitch insideSwitch = intakePivot.getForwardLimitSwitch();
+    public SparkLimitSwitch outsideSwitch = intakePivot.getForwardLimitSwitch();
 
     // clamp function (copy-pasted from elevator section)
     public static Double clamp(Double minimum, Double maximum, Double input){
@@ -58,14 +58,14 @@ public class Intake {
         
         // top roller shouldn't have power, setting pivot motor to the appropriate power
         topIntake.set(0);
-        power = inPosition-position+intakeGravity();
+        power = inPosition-position+intakeGravity(); // pivot power based linearly on error + gravity comp
         intakePivot.set(Intake.clamp(minPower, maxPower, power));
         return outside;
     }
 
     //function to intake the algae
     //constants prob not right
-    void intakeAlgae(Boolean reversed){
+    public void intakeAlgae(){
         Double position, maxPower = 0.5, minPower = -0.5, power, rollerPower = -0.5, desiredPosition = inPosition+0.1;
         position = intakeEncoder.getPosition();
         
@@ -76,13 +76,40 @@ public class Intake {
             minPower = 0.0;
 
         // setting the bottom roller to intake algae or limiting its power if it is using a lot of power (holding algae)
-        if (intakePivot.getOutputCurrent() > 2.5)
+        if (bottomIntake.getOutputCurrent() > 2.5)
             rollerPower = 0.1;
         bottomIntake.set(rollerPower);
             
         // setting power of the pivot motor
-        power = desiredPosition-position+intakeGravity();
+        power = desiredPosition-position+intakeGravity(); // pivot power based linearly on error + gravity comp
         intakePivot.set(clamp(minPower, maxPower, power));
-        return;
     }
+
+    // function for intaking coral
+    // change constants!!!!
+    public void intakeCoral(Boolean reversing){
+        Double position = intakeEncoder.getPosition();
+        Double maxPower = 0.5, minPower = -0.5, power, rollerPower = -0.5, desiredPosition = inPosition+0.4;
+
+        // handle limit switches
+        if (insideSwitch.isPressed())
+            maxPower = 0.0;
+        if (outsideSwitch.isPressed()){
+            minPower = 0.0;
+            maxPower = 0.0;
+        }else
+            // not using the rollers when not out to conserve power
+            rollerPower = 0.0;
+
+        // handling reverse intake button
+        if (reversing)
+            rollerPower *= -1;
+
+        // set roller and pivot motor speeds
+        topIntake.set(rollerPower);
+        bottomIntake.set(rollerPower);
+        power = desiredPosition-position+intakeGravity(); // pivot power based linearly on error + gravity comp
+        intakePivot.set(clamp(minPower, maxPower, power));
+    }
+
 }

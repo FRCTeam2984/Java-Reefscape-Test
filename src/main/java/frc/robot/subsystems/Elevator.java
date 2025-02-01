@@ -9,7 +9,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 
 public class Elevator extends SubsystemBase {
-  TalonFX elevatorMotor = new TalonFX(Constants.elevatorMotorID);
+  public TalonFX elevatorMotor = new TalonFX(Constants.elevatorMotorID);
 
 	// function for keeping a variable between a lower and upper limit
   public static Double clamp(Double minimum, Double maximum, Double input){

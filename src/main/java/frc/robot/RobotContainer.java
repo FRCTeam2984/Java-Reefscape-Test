@@ -4,10 +4,8 @@
 
 package frc.robot;
 
-import edu.wpi.first.wpilibj.XboxController;
-import frc.robot.Constants;
-import frc.robot.commands.Autos;
 import frc.robot.subsystems.Elevator;
+import frc.robot.subsystems.Controller;
 import frc.robot.subsystems.Intake;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -19,9 +17,11 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
  */
 public class RobotContainer {
   Double desiredPosition = 0.0;
+  Boolean retractNeeded = false;
+  char intakeLastUsed;
   public final Elevator m_Elevator = new Elevator();
   public final Intake m_Intake = new Intake();
-  final XboxController controller = new XboxController(Constants.kOperatorControllerPort);
+  public final Controller controller = new Controller();
 
   // Replace with CommandPS4Controller or CommandJoystick if needed
   /*private final CommandXboxController m_driverController =
