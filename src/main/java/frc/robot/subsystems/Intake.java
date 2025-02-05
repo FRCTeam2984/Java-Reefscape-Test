@@ -112,4 +112,23 @@ public class Intake {
         intakePivot.set(clamp(minPower, maxPower, power));
     }
 
+    public void motorLimitTest(Boolean activate){
+        Double power = 0.1;
+        if (activate){
+            topIntake.set(power);
+            bottomIntake.set(power);
+            intakePivot.set(power);
+            System.out.println("position: ");
+            System.out.println(intakeEncoder.getPosition());
+            if (insideSwitch.isPressed())
+                System.out.println("Inside limit pressed");
+            if (outsideSwitch.isPressed())
+                System.out.println("Outside limit pressed");
+        }else{
+            topIntake.set(0);
+            bottomIntake.set(0);
+            intakePivot.set(0);
+        }
+    }
+
 }
