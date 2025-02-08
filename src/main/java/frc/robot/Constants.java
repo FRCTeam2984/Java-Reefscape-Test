@@ -15,7 +15,7 @@ package frc.robot;
 public final class Constants {
   public static final int kOperatorControllerPort = 0;
   public static final int elevatorMotorID = 2;
-  public static final int intakePivotMotorID = 3;
-  public static final int intakeTopMotorID = 4;
-  public static final int intakeBottomMotorID = 5;
+  public static final int intakePivotMotorID = 13;
+  public static final int intakeTopMotorID = 11;
+  public static final int intakeBottomMotorID = 8;
 }

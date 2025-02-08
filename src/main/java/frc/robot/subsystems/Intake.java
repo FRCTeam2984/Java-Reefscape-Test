@@ -2,6 +2,7 @@ package frc.robot.subsystems;
 
 import frc.robot.Constants;
 import com.revrobotics.spark.SparkMax;
+//import com.revrobotics.AbsoluteEncoder;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkLimitSwitch;
@@ -12,8 +13,9 @@ public class Intake {
     public SparkMax bottomIntake = new SparkMax(Constants.intakeBottomMotorID, MotorType.kBrushless);
     public SparkMax intakePivot = new SparkMax(Constants.intakePivotMotorID, MotorType.kBrushless);
     public RelativeEncoder intakeEncoder = intakePivot.getEncoder();
+    
     public SparkLimitSwitch insideSwitch = intakePivot.getForwardLimitSwitch();
-    public SparkLimitSwitch outsideSwitch = intakePivot.getForwardLimitSwitch();
+    public SparkLimitSwitch outsideSwitch = intakePivot.getReverseLimitSwitch();
 
     // clamp function (copy-pasted from elevator section)
     public static Double clamp(Double minimum, Double maximum, Double input){
@@ -46,15 +48,13 @@ public class Intake {
             minPower = 0.0;
             maxPower = 0.0;
             outside = false;
-            bottomIntake.set(0);
-        }else{
-            // using or not using the bottom intake motor depending on after algae or coral
-            if (coralAlgae == 'A'){
-                bottomIntake.set(0.1);
-            }else if (coralAlgae == 'C'){
-                bottomIntake.set(0);
-            }
-        } 
+        
+        
+        // using or not using the bottom intake motor depending on after algae or coral
+        spinRollers(0.0);
+        if (coralAlgae == 'A' && !insideSwitch.isPressed())
+            bottomIntake.set(0.1);
+        }
         
         // top roller shouldn't have power, setting pivot motor to the appropriate power
         topIntake.set(0);
@@ -63,10 +63,22 @@ public class Intake {
         return outside;
     }
 
-    //function to intake the algae
+    //function to bring intake to a position
     //constants prob not right
-    public void intakeAlgae(){
-        Double position, maxPower = 0.5, minPower = -0.5, power, rollerPower = -0.5, desiredPosition = inPosition+0.1;
+    public void intakeTo(String destination){
+        // processing the input string to find the correct destination
+        Double desiredPosition = 0.0;
+        if (destination == "intakeAlgae")
+            desiredPosition = inPosition + 0.1;
+            if (bottomIntake.getOutputCurrent() > 2.5)
+                bottomIntake.set(0.1);
+            else
+                bottomIntake.set(0.5);
+        if (destination == "stationIntakeCoral")
+            desiredPosition = inPosition + 0.07;
+        if (destination == "l1Outtake")
+            desiredPosition = inPosition + 0.085;
+        Double position, maxPower = 0.5, minPower = -0.5, power;
         position = intakeEncoder.getPosition();
         
         // using limit switches
@@ -74,11 +86,6 @@ public class Intake {
             maxPower = 0.0;
         if (outsideSwitch.isPressed())
             minPower = 0.0;
-
-        // setting the bottom roller to intake algae or limiting its power if it is using a lot of power (holding algae)
-        if (bottomIntake.getOutputCurrent() > 2.5)
-            rollerPower = 0.1;
-        bottomIntake.set(rollerPower);
             
         // setting power of the pivot motor
         power = desiredPosition-position+intakeGravity(); // pivot power based linearly on error + gravity comp
@@ -106,29 +113,17 @@ public class Intake {
             rollerPower *= -1;
 
         // set roller and pivot motor speeds
-        topIntake.set(rollerPower);
-        bottomIntake.set(rollerPower);
+        spinRollers(rollerPower);
         power = desiredPosition-position+intakeGravity(); // pivot power based linearly on error + gravity comp
-        intakePivot.set(clamp(minPower, maxPower, power));
+        intakePivot.set(clamp(minPower, maxPower, power)); 
     }
 
-    public void motorLimitTest(Boolean activate){
-        Double power = 0.1;
-        if (activate){
-            topIntake.set(power);
-            bottomIntake.set(power);
-            intakePivot.set(power);
-            System.out.println("position: ");
-            System.out.println(intakeEncoder.getPosition());
-            if (insideSwitch.isPressed())
-                System.out.println("Inside limit pressed");
-            if (outsideSwitch.isPressed())
-                System.out.println("Outside limit pressed");
-        }else{
-            topIntake.set(0);
-            bottomIntake.set(0);
-            intakePivot.set(0);
-        }
+    // function for literally just spinning the rollers
+    void spinRollers(Double speed){
+        // limiting power if it is using a lot of power
+        if (bottomIntake.getOutputCurrent() > 2.5)
+            speed = 0.1;
+        bottomIntake.set(speed);
+        topIntake.set(speed);
     }
-
 }
