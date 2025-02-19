@@ -20,13 +20,13 @@ if(isButtonPressed(extendButton) && System.currentTimeMillis() > 1){
 	if(climbEncoder < NUMBER)
 climbMotor.set(ControlMode.PercentOutput, 0.01);		 // climb motor unwind, idk what direction is wind and unwind (invert?)
 	if(limitUnwindedBackward.get() || limitUnwindedForward.get())		// limit switches, use kyle’s limits
-		climbMotor.set(ControlMode.PercentOutput, 0);
+		climbMotor.set(ControlMode.PercentOutput, 0);  // not sure what will happen, put in as a guess
 	// find out led code -> LED light flashes or solid a specific color
 }
 if(isButtonPressed(retractButton)){
 	climbMotor.set(ControlMode.PercentOutput, 0.01);		 // climb motor wind to climb, idk what direction is wind and unwind (invert?)
 if(limitUnwindedBackward.get() || limitUnwindedForward.get()) 		 // limit switches, use kyle’s limits
-		climbMotor.set(ControlMode.PercentOutput, 0);
+		climbMotor.set(ControlMode.PercentOutput, 0);  // not sure what will happen, put in as a guess
 }
 if(isButtonPressed(extendButton))
 	servo.releaseRachet;
