@@ -1,4 +1,4 @@
-import edu.wpi.first.wpilibj.DigitalInput;
+/* import edu.wpi.first.wpilibj.DigitalInput;
 import com.ctre.phoenix6.hardware.TalonFX; 
 import com.ctre.phoenix.motorcontrol.can.TalonFX;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
@@ -13,10 +13,10 @@ DigitalInput limitUnwindedBackward = new DigitalInput(number);
 // retractButton creation
 Encoder climbEncoder = new Encoder(number);
 
-public void letsClimb(){
-if(isButtonPressed(extendButton) && System.currentTimeMillis() > 1){
-	servo.releaseRatchet;
-	Thread.sleep(500);
+public void letsClimb(// add something ){
+if(isButtonPressed(extendButton) && System.currentTimeMillis() > 1){ // right way to calc time?
+	servo.releaseRatchet;  // find function to release ratchet
+	Thread.sleep(500);  // change with testing
 	if(climbEncoder < NUMBER)
 climbMotor.set(ControlMode.PercentOutput, 0.01);		 // climb motor unwind, idk what direction is wind and unwind (invert?)
 	if(limitUnwindedBackward.get() || limitUnwindedForward.get())		// limit switches, use kyle’s limits
@@ -34,3 +34,4 @@ else
 	servo.engageRatchet;
 	}
 }
+*/
