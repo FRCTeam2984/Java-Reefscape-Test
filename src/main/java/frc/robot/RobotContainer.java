@@ -17,8 +17,6 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
  */
 public class RobotContainer {
   Double desiredPosition = 0.0;
-  Boolean retractNeeded = false;
-  char intakeLastUsed;
   public final Elevator m_Elevator = new Elevator();
   public final Intake m_Intake = new Intake();
   public final Controller controller = new Controller();

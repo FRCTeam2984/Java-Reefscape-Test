@@ -83,24 +83,18 @@ public class Robot extends TimedRobot {
     // updating inPosition
     if (m_robotContainer.m_Intake.insideSwitch.isPressed())
       m_robotContainer.m_Intake.inPosition = m_robotContainer.m_Intake.intakeEncoder.getPosition();
-    //System.out.println(m_robotContainer.m_Intake.intakePivot.getReverseLimitSwitch().isPressed());
-    //System.out.println(m_robotContainer.m_Intake.intakePivot.getForwardLimitSwitch().isPressed());
-    //System.out.println(m_robotContainer.m_Intake.intakeEncoder.getPosition());
     
     // intake testing
     // checking if buttons not pressed and if intake needs to retract
-    if (m_robotContainer.retractNeeded && !
+    if (m_robotContainer.m_Intake.retractNeeded && !
         (m_robotContainer.controller.algaeSwitch() || 
         (/*(not coral detected or override) && */m_robotContainer.controller.coralButton())))
-      m_robotContainer.retractNeeded = m_robotContainer.m_Intake.retractIntake(m_robotContainer.intakeLastUsed);
+      m_robotContainer.m_Intake.retractNeeded = m_robotContainer.m_Intake.retractIntake();
+    
     // checking whether to coral intake, algae intake, or neither, but coral takes priority over algae
-		if (m_robotContainer.controller.coralButton()/* && (not coral detected || override)*/){
-      m_robotContainer.intakeLastUsed = 'C';
-			m_robotContainer.retractNeeded = true;
+		if (m_robotContainer.controller.coralButton() && m_robotContainer.m_Intake.movingCoral == false/* && (not coral detected || override)*/){
 			m_robotContainer.m_Intake.intakeCoral(false);
 		} else if (m_robotContainer.controller.algaeSwitch()){
-      m_robotContainer.intakeLastUsed = 'A';
-			m_robotContainer.retractNeeded = true;
 			m_robotContainer.m_Intake.intakeTo("intakeAlgae");
 		}
     /*

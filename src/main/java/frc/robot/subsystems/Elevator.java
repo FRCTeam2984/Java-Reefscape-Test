@@ -10,9 +10,10 @@ import frc.robot.Constants;
 
 public class Elevator extends SubsystemBase {
   public TalonFX elevatorMotor = new TalonFX(Constants.elevatorMotorID);
+  Double bottomPosition = 0.0;
 
 	// function for keeping a variable between a lower and upper limit
-  public static Double clamp(Double minimum, Double maximum, Double input){
+  private static Double clamp(Double minimum, Double maximum, Double input){
     if (input < minimum)
       return minimum;
     if (input > maximum)
@@ -24,7 +25,7 @@ public class Elevator extends SubsystemBase {
   // change the math for the units of distance, power at different positions, gravity compensation
 	public boolean elevatorTo(Double destination){
     String rawInput = elevatorMotor.getRotorPosition().toString();
-    Double position = Double.parseDouble(rawInput.substring(0, 10));
+    Double position = Double.parseDouble(rawInput.substring(0, 10)) - bottomPosition;
      
 		// convert destination from input units to encoder counts
 		Double encoderDestination = destination * 0.1;//CHANGE THIS
