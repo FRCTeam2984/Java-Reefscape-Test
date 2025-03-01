@@ -1,5 +1,6 @@
 package frc.robot.subsystems;
 
+import frc.robot.Robot;
 import frc.robot.Constants;
 import pabeles.concurrency.ConcurrencyOps.Reset;
 import com.revrobotics.spark.SparkMax;
@@ -16,14 +17,17 @@ public class Intake {
     private SparkMax transportPivot = new SparkMax(Constants.intakePivotMotorID, MotorType.kBrushless);
     private SparkMax intakePivot = new SparkMax(Constants.intakePivotMotorID, MotorType.kBrushless);
     private RelativeEncoder transportEncoder = intakePivot.getEncoder();
-    private RelativeEncoder intakeEncoder = intakePivot.getEncoder();
+    public RelativeEncoder intakeEncoder = intakePivot.getEncoder();
     private char intakeLastUsed;
     private String currentState = "none"; 
-    private Integer timer = 0;
+    private Integer timer;
     public Boolean retractNeeded = false, movingCoral = false;
     
-    private SparkLimitSwitch insideSwitch = intakePivot.getForwardLimitSwitch();
-    private SparkLimitSwitch outsideSwitch = intakePivot.getReverseLimitSwitch();
+    private SparkLimitSwitch insideTransportSwitch = intakePivot.getForwardLimitSwitch();
+    private SparkLimitSwitch outsideTransportSwitch = intakePivot.getReverseLimitSwitch();
+
+    public SparkLimitSwitch insideSwitch = intakePivot.getForwardLimitSwitch();
+    public SparkLimitSwitch outsideSwitch = intakePivot.getReverseLimitSwitch();
 
     // clamp function (copy-pasted from elevator section)
     private static Double clamp(Double minimum, Double maximum, Double input){
@@ -143,45 +147,52 @@ public class Intake {
     }
 
     // function for putting the coral in the elevator
-    Boolean moveCoral(){
-	Double minPower = -0.7, maxPower = 0.7;
-	if (elevator.elevatorto(elevator.bottomPosition) && transportEncoder.getPosition() <= 0.05){
-        switch (currentState){
-		    case ("start"): // start
-			    timer = 0;
-		    	currentState = "run belt";
-	    		break;
-	        case ("run belt"): // run belt
-                ++timer;
-	    		transportPivot.set(0.5);
-	    		if (timer >= 50*3 || coral detected in arm) // 3 seconds
-	    			Current state = use interior arm;
-			break;
-		case ('T'): // use transport arm
-			If (belt-side limit switch activated){
-				minPower = 0;
-			}
-			If (elevator-side limit switch pressed){
-				Interior arm.set(0);
-				Current state = return interior arm;
-break;
-			}
-			Calculate gravity comp;
-			Interior arm.set(clamp(minPower, maxPower, gravitycomp+error);
-			Break;
-		case ('R'): // return transport arm
-			If (belt-side limit switch activated){
-				Interior arm.set(0);
-				Current state = none;
-break;
-			}
-			If (elevator-side limit switch pressed){
-				maxPower = 0;
-			}
-			Calculate gravity comp;
-			Interior arm.set(clamp(minPower, maxPower, gravitycomp-error);
-			Break;
-		    }
-	    }
+    void moveCoral(){
+	    Double minPower = -0.7, maxPower = 0.7, error = transportEncoder.getPosition()-0.3;
+        Double transportGravity = Math.sin(Math.toRadians(error)) / Math.pow(transportPivot.getOutputCurrent(), 2) * 0.1;
+	    if (Robot.m_robotContainer.m_Elevator.elevatorTo(Robot.m_robotContainer.m_Elevator.bottomPosition) && transportEncoder.getPosition() <= 0.05){
+            switch (currentState){
+		        case ("start"): // start
+		    	    timer = 0;
+		        	currentState = "run belt";
+	        		break;
+	            case ("run belt"): // run belt
+                    ++timer;
+	    		    transportPivot.set(0.5);
+	    		    if (timer >= 50*3/* || coral detected in arm*/) // 3 seconds
+	    			    currentState = "use transport arm";
+			        break;
+		        case ("use transport arm"): // use transport arm
+			        if (insideTransportSwitch.isPressed()){
+				        minPower = 0.0;
+			        }
+			        if (outsideTransportSwitch.isPressed()){
+				        transportPivot.set(0);
+				        currentState = "return transport arm";
+                        break;
+                    }
+			        transportPivot.set(clamp(minPower, maxPower, transportGravity+transportEncoder.getPosition()+0.6));
+			        break;
+		        case ("return transport arm"): // return transport arm
+			        if (insideTransportSwitch.isPressed()){
+				        transportPivot.set(0);
+				        currentState = "none";
+                        break;
+			        }
+			        if (outsideTransportSwitch.isPressed()){
+				        maxPower = 0.0;
+			        }
+			        transportPivot.set(clamp(minPower, maxPower, transportGravity+transportEncoder.getPosition()));
+			        break;
+	        }
+        }else{
+            if (insideTransportSwitch.isPressed()){
+                minPower = 0.0;
+            }
+            if (outsideTransportSwitch.isPressed()){
+                maxPower = 0.0;
+            }
+            transportPivot.set(clamp(minPower, maxPower, transportGravity+transportEncoder.getPosition()));
+        }
     }
 }
