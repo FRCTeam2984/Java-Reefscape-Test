@@ -29,9 +29,17 @@ public class Elevator extends SubsystemBase {
      
 		// convert destination from input units to encoder counts
 		Double encoderDestination = destination * 0.1;//CHANGE THIS
-    Double minPower = -0.9, maxPower = 0.9, gravityComp = 0.0, error = encoderDestination - position, power;
+    Double minPower = -0.9, maxPower = 0.9, gravityComp = 0.05, error = encoderDestination - position, power;
 		Integer maxError = 5; // change gravityComp
 		Boolean closeEnough = false;
+
+    // calculate gravity comp based on current position
+    if (position > 10)
+      gravityComp = 0.05;
+    if (position > 20)
+      gravityComp = 0.1;
+    if (position > 30)
+      gravityComp = 0.15;
 			
 		// set motor power based on error or set it to keep position
 		if (Math.abs(error) > maxError)
