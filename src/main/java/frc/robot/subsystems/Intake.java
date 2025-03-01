@@ -5,6 +5,8 @@ import frc.robot.Constants;
 import pabeles.concurrency.ConcurrencyOps.Reset;
 import com.revrobotics.spark.SparkMax;
 import edu.wpi.first.units.measure.Current;
+import com.ctre.phoenix.motorcontrol.ControlMode;
+import com.ctre.phoenix.motorcontrol.can.*;
 //import com.revrobotics.AbsoluteEncoder;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
@@ -12,10 +14,11 @@ import com.revrobotics.spark.SparkLimitSwitch;
 
 public class Intake {
     public Double inPosition;
+    private TalonSRX beltDrive = new TalonSRX(Constants.intakeBeltID);
     private SparkMax topIntake = new SparkMax(Constants.intakeTopMotorID, MotorType.kBrushless);
     private SparkMax bottomIntake = new SparkMax(Constants.intakeBottomMotorID, MotorType.kBrushless);
     private SparkMax transportPivot = new SparkMax(Constants.intakePivotMotorID, MotorType.kBrushless);
-    private SparkMax intakePivot = new SparkMax(Constants.intakePivotMotorID, MotorType.kBrushless);
+    private SparkMax intakePivot = new SparkMax(Constants.intakeTransportPivotID, MotorType.kBrushless);
     private RelativeEncoder transportEncoder = intakePivot.getEncoder();
     public RelativeEncoder intakeEncoder = intakePivot.getEncoder();
     private char intakeLastUsed;
@@ -71,7 +74,7 @@ public class Intake {
         power = inPosition-position+intakeGravity(); // pivot power based linearly on error + gravity comp
         intakePivot.set(Intake.clamp(minPower, maxPower, power));
         if (outside = false && intakeLastUsed == 'C')
-            currentState = "none";
+            currentState = "start";
         return outside;
     }
 
@@ -148,6 +151,8 @@ public class Intake {
 
     // function for putting the coral in the elevator
     void moveCoral(){
+        if (currentState != "run belt")
+            beltDrive.set(ControlMode.PercentOutput, 0.5);
 	    Double minPower = -0.7, maxPower = 0.7, error = transportEncoder.getPosition()-0.3;
         Double transportGravity = Math.sin(Math.toRadians(error)) / Math.pow(transportPivot.getOutputCurrent(), 2) * 0.1;
 	    if (Robot.m_robotContainer.m_Elevator.elevatorTo(Robot.m_robotContainer.m_Elevator.bottomPosition) && transportEncoder.getPosition() <= 0.05){
@@ -158,7 +163,7 @@ public class Intake {
 	        		break;
 	            case ("run belt"): // run belt
                     ++timer;
-	    		    transportPivot.set(0.5);
+	    		    beltDrive.set(ControlMode.PercentOutput, 0.5);
 	    		    if (timer >= 50*3/* || coral detected in arm*/) // 3 seconds
 	    			    currentState = "use transport arm";
 			        break;

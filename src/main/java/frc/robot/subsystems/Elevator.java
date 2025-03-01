@@ -23,7 +23,7 @@ public class Elevator extends SubsystemBase {
 
   // function for moving elevator (you can change function name, i don’t care)
   // change the math for the units of distance, power at different positions, gravity compensation
-	public boolean elevatorTo(Double destination){
+	public Boolean elevatorTo(Double destination){
     String rawInput = elevatorMotor.getRotorPosition().toString();
     Double position = Double.parseDouble(rawInput.substring(0, 10)) - bottomPosition;
      

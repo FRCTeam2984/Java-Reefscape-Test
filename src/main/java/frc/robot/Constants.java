@@ -18,4 +18,6 @@ public final class Constants {
   public static final int intakePivotMotorID = 13;
   public static final int intakeTopMotorID = 11;
   public static final int intakeBottomMotorID = 8;
+  public static final int intakeTransportPivotID = 1;
+  public static final int intakeBeltID = 1;
 }
